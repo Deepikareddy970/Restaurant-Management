@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 font-sans;
+  }
+}
+
+/* Glassmorphism panel styling */
+.glass-panel {
+  @apply bg-white/85 backdrop-blur-lg border border-slate-200/60 shadow-xl;
+}
+
+.dark .glass-panel {
+  @apply bg-slate-900/80 backdrop-blur-lg border border-slate-800/60 shadow-2xl;
+}
+
+/* Glow effects for KPIs */
+.glow-indigo {
+  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.15);
+}
+.dark .glow-indigo {
+  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.4);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.15);
+}
+.dark .glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.4);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700;
+}
+
+/* Animation utilities */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .8; transform: scale(0.98); }
+}
+
+.pulse-soft {
+  animation: pulse-soft 2s infinite ease-in-out;
+}
