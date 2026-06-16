@@ -1,5 +1,5 @@
-export const API_BASE_URL = 'http://https://restaurant-management-backend-28nv.onrender.com/api';
-export const FILE_BASE_URL = 'http://https://restaurant-management-backend-28nv.onrender.com';
+export const API_BASE_URL = 'https://://restaurant-management-backend-28nv.onrender.com/api';
+export const FILE_BASE_URL = 'https://://restaurant-management-backend-28nv.onrender.com';
 
 let accessToken = null;
 let refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');

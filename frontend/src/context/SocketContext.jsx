@@ -41,7 +41,7 @@ export const SocketProvider = ({ children }) => {
     }
 
     // Initialize socket connection
-    const socketUrl = 'http://https://restaurant-management-backend-28nv.onrender.com';
+    const socketUrl = 'https://://restaurant-management-backend-28nv.onrender.com';
     console.log(`[Socket.IO] Connecting to ${socketUrl}`);
     const newSocket = io(socketUrl);
 
@@ -135,12 +135,12 @@ export const SocketProvider = ({ children }) => {
           <div
             key={toast.id}
             className={`p-4 rounded-xl shadow-2xl border transition-all duration-300 transform translate-y-0 slide-in glass-panel flex items-start gap-3 ${toast.type === 'success'
-                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-900 dark:text-emerald-300'
-                : toast.type === 'warning'
-                  ? 'border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-300'
-                  : toast.type === 'error'
-                    ? 'border-rose-500/50 bg-rose-500/10 text-rose-900 dark:text-rose-300'
-                    : 'border-indigo-500/50 bg-indigo-500/10 text-indigo-900 dark:text-indigo-300'
+              ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-900 dark:text-emerald-300'
+              : toast.type === 'warning'
+                ? 'border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-300'
+                : toast.type === 'error'
+                  ? 'border-rose-500/50 bg-rose-500/10 text-rose-900 dark:text-rose-300'
+                  : 'border-indigo-500/50 bg-indigo-500/10 text-indigo-900 dark:text-indigo-300'
               }`}
           >
             <div className="flex-1 text-sm font-semibold">{toast.message}</div>
