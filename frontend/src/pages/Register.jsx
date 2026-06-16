@@ -49,15 +49,15 @@ const Register = () => {
 
         <div className="text-center mb-8 relative z-10">
           <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl mx-auto shadow-lg shadow-indigo-600/30">
-            D
+            G
           </div>
 
           <h1 className="text-3xl font-black mt-4 bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
-            DineFlow
+            Guramrit
           </h1>
 
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            Restaurant Management & Customer Services
+            Multi-Cuisine Ac Restaurant
           </p>
         </div>
 
@@ -100,7 +100,7 @@ const Register = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="example@dineflow.com"
+              placeholder="Enter your email address"
               className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-transparent focus:outline-none focus:border-indigo-500"
             />
           </div>

@@ -5,7 +5,15 @@ const AuditLog = require('../models/AuditLog');
 // 1. Create/Place Order
 const createOrder = async (req, res) => {
   try {
-    const { items, customerName, totalAmount } = req.body;
+    const {
+      items,
+      customerName,
+      totalAmount,
+      paymentMethod,
+      paymentStatus
+    } = req.body;
+
+
 
     if (!items || !items.length) {
       return res.status(400).json({ success: false, message: 'Cart is empty. Please add items.' });
@@ -32,6 +40,8 @@ const createOrder = async (req, res) => {
       customerName: resolvedCustomerName,
       items: itemsList,
       totalAmount: finalTotal,
+      paymentMethod,
+      paymentStatus,
       status: 'PENDING',
       history: [
         {
@@ -177,7 +187,7 @@ const assignEmployee = async (req, res) => {
   try {
     const { id } = req.params;
     let employeeId = req.body.employeeId; // optional - Managers can assign specific employees
-    
+
     const order = await Order.findById(id);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found.' });

@@ -20,9 +20,7 @@ const Navbar = ({ setSidebarOpen }) => {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <h2 className="hidden sm:block font-bold text-lg text-slate-800 dark:text-slate-100">
-          Epitome Operations Center
-        </h2>
+
       </div>
 
       {/* Control Buttons */}
@@ -52,8 +50,8 @@ const Navbar = ({ setSidebarOpen }) => {
           {/* Notifications Dropdown Panel */}
           {showNotifications && (
             <>
-              <div 
-                onClick={() => setShowNotifications(false)} 
+              <div
+                onClick={() => setShowNotifications(false)}
                 className="fixed inset-0 z-40 bg-transparent"
               />
               <div className="absolute right-0 mt-3 w-80 max-h-96 overflow-y-auto z-50 glass-panel rounded-2xl p-4 shadow-2xl animate-slide-in">
@@ -82,18 +80,16 @@ const Navbar = ({ setSidebarOpen }) => {
                     notifications.map((notif) => (
                       <div
                         key={notif.id}
-                        className={`p-2.5 rounded-xl border transition-colors ${
-                          notif.read
-                            ? 'border-slate-100 dark:border-slate-800/40 bg-transparent'
-                            : 'border-indigo-100 dark:border-indigo-950/20 bg-indigo-50/20 dark:bg-indigo-950/10'
-                        }`}
+                        className={`p-2.5 rounded-xl border transition-colors ${notif.read
+                          ? 'border-slate-100 dark:border-slate-800/40 bg-transparent'
+                          : 'border-indigo-100 dark:border-indigo-950/20 bg-indigo-50/20 dark:bg-indigo-950/10'
+                          }`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                            notif.type === 'ORDER'
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                              : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
-                          }`}>
+                          <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${notif.type === 'ORDER'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                            }`}>
                             {notif.type}
                           </span>
                           <span className="text-[10px] text-slate-400">

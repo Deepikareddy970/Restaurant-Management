@@ -72,7 +72,7 @@ const AdminDashboard = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `DineFlow_Report_${Date.now()}.${format === 'excel' ? 'xlsx' : 'pdf'}`);
+      link.setAttribute('download', `Guramrit_Report_${Date.now()}.${format === 'excel' ? 'xlsx' : 'pdf'}`);
 
       document.body.appendChild(link);
       link.click();
@@ -113,7 +113,7 @@ const AdminDashboard = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
-            DineFlow Admin Dashboard
+            Guramrit Admin Dashboard
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Real-time analytics, revenue distribution, and workforce metrics
@@ -152,7 +152,7 @@ const AdminDashboard = () => {
             </div>
           </div>
           <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-4">
-            ${summary?.dailyRevenue?.toFixed(2)}
+            ₹{summary?.dailyRevenue?.toFixed(2)}
           </h2>
           <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-bold mt-2">
             <TrendingUp className="w-3.5 h-3.5" />
@@ -185,7 +185,7 @@ const AdminDashboard = () => {
             </div>
           </div>
           <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-4">
-            ${summary?.weeklyRevenue?.toFixed(2)}
+            ₹{summary?.weeklyRevenue?.toFixed(2)}
           </h2>
           <p className="text-[10px] text-slate-400 font-semibold mt-2">
             Weekly orders volume: {summary?.weeklyOrders}

@@ -1,16 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Home, 
-  ClipboardList, 
-  Users, 
-  BarChart3, 
-  Clock, 
-  Settings, 
-  LogOut, 
-  X, 
-  ShoppingCart, 
+import {
+  Home,
+  ClipboardList,
+  Users,
+  BarChart3,
+  Clock,
+  LogOut,
+  X,
+  ShoppingCart,
   History,
   ShieldCheck
 } from 'lucide-react';
@@ -34,7 +33,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { name: 'Manager Dashboard', path: '/manager', icon: Home },
           { name: 'Orders Dispatch', path: '/manager/orders', icon: ClipboardList },
           { name: 'Attendance Tracker', path: '/manager/attendance', icon: Clock },
-          { name: 'Reports Console', path: '/manager/reports', icon: BarChart3 },
         ];
       case 'EMPLOYEE':
         return [
@@ -64,14 +62,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       <div className="flex items-center justify-between pb-6 mb-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
-            E
+            G
           </div>
           <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
-            EPITOME
+            GURAMRIT
           </span>
         </div>
-        <button 
-          onClick={() => setIsOpen(false)} 
+        <button
+          onClick={() => setIsOpen(false)}
           className="md:hidden p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           <X className="w-5 h-5 text-slate-500" />
@@ -130,8 +128,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Mobile Drawer (visible on click) */}
       {isOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
-          <div 
-            onClick={() => setIsOpen(false)} 
+          <div
+            onClick={() => setIsOpen(false)}
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
           />
           <div className="relative z-50 flex-1 flex flex-col max-w-xs animate-slide-in">

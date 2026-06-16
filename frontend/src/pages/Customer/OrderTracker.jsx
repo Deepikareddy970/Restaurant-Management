@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { apiRequest } from '../../utils/api';
 import { useSocket } from '../../context/SocketContext';
-import { 
-  CheckCircle, 
-  Clock, 
-  ChefHat, 
-  BellRing, 
-  Check, 
-  ArrowLeft 
+import {
+  CheckCircle,
+  Clock,
+  ChefHat,
+  BellRing,
+  Check,
+  ArrowLeft
 } from 'lucide-react';
 
 const STEPS = [
@@ -36,7 +36,7 @@ const OrderTracker = () => {
 
     try {
       setLoading(true);
-      const res = await apiRequest(`/orders/${orderId}/history`);
+      const res = await apiRequest(`/orders/₹{orderId}/history`);
       const data = await res.json();
       if (data.success) {
         setOrder(data.order);
@@ -64,7 +64,7 @@ const OrderTracker = () => {
     const handleOrderUpdate = (data) => {
       // Check if update relates to this order
       if (data.orderId === orderId) {
-        addToast(`Order update: ${data.notes || data.status}`, 'info');
+        addToast(`Order update: ₹{data.notes || data.status}`, 'info');
         setOrder((prev) => {
           if (!prev) return null;
           return {
@@ -132,9 +132,9 @@ const OrderTracker = () => {
         <div className="relative flex flex-col md:flex-row md:justify-between gap-8 md:gap-4">
           {/* Timeline connecting line (desktop) */}
           <div className="absolute top-[26px] left-8 right-8 h-0.5 bg-slate-200 dark:bg-slate-800 hidden md:block z-0">
-            <div 
-              className="h-full bg-indigo-600 transition-all duration-500" 
-              style={{ width: `${(activeIndex / (STEPS.length - 1)) * 100}%` }}
+            <div
+              className="h-full bg-indigo-600 transition-all duration-500"
+              style={{ width: `₹{(activeIndex / (STEPS.length - 1)) * 100}%` }}
             />
           </div>
 
@@ -146,7 +146,7 @@ const OrderTracker = () => {
             return (
               <div key={step.status} className="flex md:flex-col items-start md:items-center gap-4 md:gap-2 flex-1 relative z-10">
                 {/* Stepper badge */}
-                <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors ${
+                <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors ₹{
                   isActive ? 'border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' :
                   isCompleted ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600' :
                   'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400'
@@ -160,7 +160,7 @@ const OrderTracker = () => {
 
                 {/* Text details */}
                 <div className="md:text-center text-xs">
-                  <h4 className={`font-bold text-sm ${isActive || isCompleted ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400'}`}>
+                  <h4 className={`font-bold text-sm ₹{isActive || isCompleted ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400'}`}>
                     {step.label}
                   </h4>
                   <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed max-w-[140px] md:mx-auto">
@@ -195,12 +195,12 @@ const OrderTracker = () => {
           {order.items.map((item, idx) => (
             <div key={idx} className="py-3 flex justify-between">
               <span className="font-bold text-slate-700 dark:text-slate-305">{item.name} <span className="text-slate-400 font-semibold">x{item.quantity}</span></span>
-              <span className="font-black text-slate-700 dark:text-slate-305">${(item.price * item.quantity).toFixed(2)}</span>
+              <span className="font-black text-slate-700 dark:text-slate-305">₹{(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
           <div className="pt-3 flex justify-between font-bold text-slate-800 dark:text-slate-200">
             <span>Total Bill Amount</span>
-            <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">${order.totalAmount.toFixed(2)}</span>
+            <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">₹{order.totalAmount.toFixed(2)}</span>
           </div>
         </div>
       </div>

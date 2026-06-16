@@ -26,7 +26,7 @@ const EmployeeDashboard = () => {
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState(null); // base64 string
   const [gpsCoords, setGpsCoords] = useState(null); // {lat, lng}
-  const [simulateOutside, setSimulateOutside] = useState(false); // test helper
+
   const [clockInLoading, setClockInLoading] = useState(false);
 
   const videoRef = useRef(null);
@@ -66,16 +66,39 @@ const EmployeeDashboard = () => {
 
   // Web Cam Controls
   const startCamera = async () => {
+    console.log("Start Camera Clicked");
+
     setCapturedPhoto(null);
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setCameraActive(true);
-      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+
+      console.log("Stream received:", stream);
+
+      streamRef.current = stream;
+      setCameraActive(true);
+
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+
+          videoRef.current
+            .play()
+            .then(() => console.log("Video Playing"))
+            .catch((err) => console.error("Play Error:", err));
+        } else {
+          console.error("videoRef.current is NULL");
+        }
+      }, 300);
+
     } catch (err) {
-      addToast('Could not access webcam camera. Please grant permissions.', 'error');
+      console.error("Camera Error:", err);
+
+      alert(
+        `Camera Error:\n${err.name}\n${err.message}`
+      );
     }
   };
 
@@ -99,12 +122,6 @@ const EmployeeDashboard = () => {
 
   // Get GPS Coordinates
   const fetchGPS = () => {
-    if (simulateOutside) {
-      // Simulate Chennai location (outside 100m of Bangalore restaurant)
-      setGpsCoords({ latitude: 13.0826802, longitude: 80.2707184 });
-      addToast('Simulated location: Outside Geofence (Chennai)', 'info');
-      return;
-    }
 
     if (!navigator.geolocation) {
       addToast('Geolocation is not supported by your browser.', 'error');
@@ -120,10 +137,14 @@ const EmployeeDashboard = () => {
         addToast('GPS coordinates fetched successfully.', 'success');
       },
       (error) => {
-        // Fallback: If geolocation permissions are blocked on desktop, simulate inside restaurant coordinates
-        console.warn('Geolocation blocked. Simulating inside restaurant coordinates.', error.message);
-        setGpsCoords({ latitude: 12.9715987, longitude: 77.5945627 });
-        addToast('Geolocation blocked. Simulated inside geofence coordinates.', 'warning');
+        console.error('Geolocation Error:', error);
+
+        addToast(
+          'Location permission denied. Please allow GPS access.',
+          'error'
+        );
+
+        setGpsCoords(null);
       },
       { enableHighAccuracy: true }
     );
@@ -226,7 +247,7 @@ const EmployeeDashboard = () => {
       {/* Heading */}
       <div>
         <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">
-          DineFlow Employee Dashboard
+          Guramrit Employee Dashboard
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Perform clock-in, handle orders, and monitor your shifts
@@ -268,16 +289,29 @@ const EmployeeDashboard = () => {
             ) : (
               // Clocked Out, need to Clock In
               <div className="space-y-4">
+                <p className="text-xs font-bold text-red-500">
+                  Camera Active: {String(cameraActive)}
+                </p>
                 {/* Selfie Webcam Feed container */}
                 <div className="w-full aspect-video rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 flex items-center justify-center overflow-hidden relative">
                   {cameraActive ? (
-                    <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
                   ) : capturedPhoto ? (
-                    <img src={capturedPhoto} alt="Captured" className="w-full h-full object-cover" />
+                    <img
+                      src={capturedPhoto}
+                      alt="Captured"
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
                   ) : (
-                    <div className="text-center p-4">
-                      <Camera className="w-8 h-8 text-slate-400 mx-auto" />
-                      <p className="text-[10px] text-slate-450 mt-2 font-semibold">Webcam Selfie Capture</p>
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <Camera className="w-10 h-10 text-slate-400 mb-2" />
+                      <p>Webcam Selfie Capture</p>
                     </div>
                   )}
 
@@ -338,19 +372,6 @@ const EmployeeDashboard = () => {
                   </button>
                 </div>
 
-                {/* Location simulation toggler */}
-                <label className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 cursor-pointer pt-1">
-                  <input
-                    type="checkbox"
-                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 dark:bg-slate-900"
-                    checked={simulateOutside}
-                    onChange={(e) => {
-                      setSimulateOutside(e.target.checked);
-                      setGpsCoords(null); // Force refetch
-                    }}
-                  />
-                  <span>Simulate Geofence Failure (Outside 100m)</span>
-                </label>
 
                 {/* Submit button */}
                 <button
@@ -394,9 +415,9 @@ const EmployeeDashboard = () => {
                           </span>
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${order.status === 'PENDING' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
-                            order.status === 'PREPARING' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' :
-                              order.status === 'READY' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                                'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                          order.status === 'PREPARING' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' :
+                            order.status === 'READY' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                              'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
                           }`}>
                           {order.status}
                         </span>
@@ -498,8 +519,8 @@ const EmployeeDashboard = () => {
                     <td className="py-3.5 text-slate-450">{log.distanceMeters} meters</td>
                     <td className="py-3.5">
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${log.status === 'PRESENT' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                          log.status === 'LATE' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
-                            'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-350'
+                        log.status === 'LATE' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                          'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-350'
                         }`}>
                         {log.status}
                       </span>

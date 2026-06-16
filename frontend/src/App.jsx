@@ -21,6 +21,8 @@ import Audits from './pages/Admin/Audits';
 
 // Manager Pages
 import ManagerDashboard from './pages/Manager/ManagerDashboard';
+import OrdersDispatch from './pages/Manager/OrdersDispatch';
+import AttendanceTracker from './pages/Manager/AttendanceTracker';
 
 // Employee Pages
 import EmployeeDashboard from './pages/Employee/EmployeeDashboard';
@@ -57,9 +59,8 @@ function App() {
               {/* Manager Routes */}
               <Route element={<Layout allowedRoles={['MANAGER']} />}>
                 <Route path="/manager" element={<ManagerDashboard />} />
-                <Route path="/manager/orders" element={<ManagerDashboard />} />
-                <Route path="/manager/attendance" element={<ManagerDashboard />} />
-                <Route path="/manager/reports" element={<Reports />} />
+                <Route path="/manager/orders" element={<OrdersDispatch />} />
+                <Route path="/manager/attendance" element={<AttendanceTracker />} />
               </Route>
 
               {/* Employee Routes */}

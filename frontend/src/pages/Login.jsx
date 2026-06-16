@@ -56,13 +56,13 @@ const Login = () => {
 
         <div className="text-center mb-8 relative z-10">
           <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl mx-auto shadow-lg shadow-indigo-600/30">
-            E
+            G
           </div>
           <h1 className="text-2xl font-black mt-4 bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
-            Welcome to DineFlow
+            Welcome to Guramrit
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-            Restaurant Management & Customer Services
+            Multi-Cuisine Ac Restaurant
           </p>
         </div>
 
@@ -81,7 +81,7 @@ const Login = () => {
               type="email"
               required
               className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-slate-850 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-600 transition duration-200 text-sm"
-              placeholder="e.g. admin@epitome.com"
+              placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
