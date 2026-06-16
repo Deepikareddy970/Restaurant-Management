@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
       if (token) {
         try {
-          const res = await fetch('http://localhost:5000/api/auth/refresh', {
+          const res = await fetch('http://https://restaurant-management-backend-28nv.onrender.com/api/auth/refresh', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token }),

@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
   const addToast = (message, type = 'info') => {
     const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, message, type }]);
-    
+
     // Auto-remove toast after 5 seconds
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -41,7 +41,7 @@ export const SocketProvider = ({ children }) => {
     }
 
     // Initialize socket connection
-    const socketUrl = 'http://localhost:5000';
+    const socketUrl = 'http://https://restaurant-management-backend-28nv.onrender.com';
     console.log(`[Socket.IO] Connecting to ${socketUrl}`);
     const newSocket = io(socketUrl);
 
@@ -85,7 +85,7 @@ export const SocketProvider = ({ children }) => {
     // Global order status update listener
     newSocket.on('orderUpdate', (data) => {
       const msg = `Order ${data.orderNumber} status updated to ${data.status}`;
-      
+
       // If Customer: show alert only if it's their order
       // If Admin/Manager: always show
       // If Employee: show if assigned to it
@@ -128,21 +128,20 @@ export const SocketProvider = ({ children }) => {
       }}
     >
       {children}
-      
+
       {/* Toast notifications rendering layer */}
       <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 max-w-sm w-full">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`p-4 rounded-xl shadow-2xl border transition-all duration-300 transform translate-y-0 slide-in glass-panel flex items-start gap-3 ${
-              toast.type === 'success'
+            className={`p-4 rounded-xl shadow-2xl border transition-all duration-300 transform translate-y-0 slide-in glass-panel flex items-start gap-3 ${toast.type === 'success'
                 ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-900 dark:text-emerald-300'
                 : toast.type === 'warning'
-                ? 'border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-300'
-                : toast.type === 'error'
-                ? 'border-rose-500/50 bg-rose-500/10 text-rose-900 dark:text-rose-300'
-                : 'border-indigo-500/50 bg-indigo-500/10 text-indigo-900 dark:text-indigo-300'
-            }`}
+                  ? 'border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-300'
+                  : toast.type === 'error'
+                    ? 'border-rose-500/50 bg-rose-500/10 text-rose-900 dark:text-rose-300'
+                    : 'border-indigo-500/50 bg-indigo-500/10 text-indigo-900 dark:text-indigo-300'
+              }`}
           >
             <div className="flex-1 text-sm font-semibold">{toast.message}</div>
           </div>

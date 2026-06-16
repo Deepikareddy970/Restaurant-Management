@@ -1,5 +1,5 @@
-export const API_BASE_URL = 'http://localhost:5000/api';
-export const FILE_BASE_URL = 'http://localhost:5000';
+export const API_BASE_URL = 'http://https://restaurant-management-backend-28nv.onrender.com/api';
+export const FILE_BASE_URL = 'http://https://restaurant-management-backend-28nv.onrender.com';
 
 let accessToken = null;
 let refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');
@@ -30,9 +30,9 @@ export const getRefreshToken = () => refreshToken;
 
 export const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   options.headers = options.headers || {};
-  
+
   if (accessToken) {
     options.headers['Authorization'] = `Bearer ${accessToken}`;
   }
@@ -57,7 +57,7 @@ export const apiRequest = async (endpoint, options = {}) => {
       if (refreshData.success) {
         const rememberMe = localStorage.getItem('rememberMe') === 'true';
         setTokens(refreshData.accessToken, refreshData.refreshToken, rememberMe);
-        
+
         // Retry the request with new token
         options.headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
         response = await fetch(url, options);
