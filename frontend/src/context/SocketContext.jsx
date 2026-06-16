@@ -41,7 +41,7 @@ export const SocketProvider = ({ children }) => {
     }
 
     // Initialize socket connection
-    const socketUrl = 'https://://restaurant-management-backend-28nv.onrender.com';
+    const socketUrl = 'https://restaurant-management-backend-28nv.onrender.com';
     console.log(`[Socket.IO] Connecting to ${socketUrl}`);
     const newSocket = io(socketUrl);
 
