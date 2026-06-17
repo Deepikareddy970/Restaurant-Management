@@ -36,7 +36,7 @@ const OrderTracker = () => {
 
     try {
       setLoading(true);
-      const res = await apiRequest(`/orders/₹{orderId}/history`);
+      const res = await apiRequest(`/orders/${orderId}/history`);
       const data = await res.json();
       if (data.success) {
         setOrder(data.order);
@@ -64,7 +64,7 @@ const OrderTracker = () => {
     const handleOrderUpdate = (data) => {
       // Check if update relates to this order
       if (data.orderId === orderId) {
-        addToast(`Order update: ₹{data.notes || data.status}`, 'info');
+        addToast(`Order update: ${data.notes || data.status}`, 'info');
         setOrder((prev) => {
           if (!prev) return null;
           return {
@@ -134,7 +134,7 @@ const OrderTracker = () => {
           <div className="absolute top-[26px] left-8 right-8 h-0.5 bg-slate-200 dark:bg-slate-800 hidden md:block z-0">
             <div
               className="h-full bg-indigo-600 transition-all duration-500"
-              style={{ width: `₹{(activeIndex / (STEPS.length - 1)) * 100}%` }}
+              style={{ width: `${(activeIndex / (STEPS.length - 1)) * 100}%` }}
             />
           </div>
 
@@ -160,7 +160,7 @@ const OrderTracker = () => {
 
                 {/* Text details */}
                 <div className="md:text-center text-xs">
-                  <h4 className={`font-bold text-sm ₹{isActive || isCompleted ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400'}`}>
+                  <h4 className={`font-bold text-sm ${isActive || isCompleted ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400'}`}>
                     {step.label}
                   </h4>
                   <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed max-w-[140px] md:mx-auto">
