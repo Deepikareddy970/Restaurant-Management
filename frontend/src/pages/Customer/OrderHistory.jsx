@@ -76,7 +76,7 @@ const OrderHistory = () => {
                       {order.orderNumber}
                     </td>
                     <td className="py-4 text-slate-500 dark:text-slate-400 font-medium">
-                      {order.items.map((i) => `₹{i.name} (x₹{i.quantity})`).join(', ')}
+                      {order.items.map((i) => `${i.name} (x${i.quantity})`).join(', ')}
                     </td>
                     <td className="py-4 font-black">₹{order.totalAmount.toFixed(2)}</td>
                     <td className="py-4">
@@ -85,7 +85,7 @@ const OrderHistory = () => {
                       </span>
                     </td>
                     <td className="py-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ₹{order.status === 'PENDING' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${order.status === 'PENDING' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
                         order.status === 'PREPARING' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' :
                           order.status === 'READY' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
                             order.status === 'DELIVERED' ? 'bg-slate-105 text-slate-700 dark:bg-slate-800 dark:text-slate-300' :
@@ -96,7 +96,7 @@ const OrderHistory = () => {
                     </td>
                     <td className="py-4 text-right">
                       <Link
-                        to={`/customer/tracker?orderId=₹{order._id}`}
+                        to={`/customer/tracker?orderId=${order._id}`}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 text-[10px] font-bold text-slate-700 dark:text-slate-300"
                       >
                         <span>View progress</span>
