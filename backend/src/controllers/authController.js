@@ -109,7 +109,7 @@ You can now login using your email and password.
 </div>
 `;
 
-    await sendMail(email, subject, text, html);
+    //await sendMail(email, subject, text, html);
 
     // Log action
     await AuditLog.create({
