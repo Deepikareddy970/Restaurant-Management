@@ -14,7 +14,7 @@ import {
   Area
 } from 'recharts';
 import {
-  DollarSign,
+  IndianRupee,
   ShoppingBag,
   Users,
   Clock,
@@ -148,7 +148,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Today's Revenue</span>
             <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
-              <DollarSign className="w-5 h-5" />
+              <IndianRupee className="w-5 h-5" />
             </div>
           </div>
           <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-4">
@@ -181,7 +181,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Weekly Revenue</span>
             <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
-              <DollarSign className="w-5 h-5" />
+              <IndianRupee className="w-5 h-5" />
             </div>
           </div>
           <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-4">

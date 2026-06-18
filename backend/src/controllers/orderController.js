@@ -148,6 +148,20 @@ const updateOrderStatus = async (req, res) => {
       notes: notes || `Order status updated to ${status}`,
       timestamp: new Date(),
     });
+    if (
+      status === 'DELIVERED' &&
+      order.assignedEmployee &&
+      order.assignedEmployee.id
+    ) {
+      await User.findByIdAndUpdate(
+        order.assignedEmployee.id,
+        {
+          $inc: {
+            'performance.totalOrdersHandled': 1
+          }
+        }
+      );
+    }
 
     await order.save();
 

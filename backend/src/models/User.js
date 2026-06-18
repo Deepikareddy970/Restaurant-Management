@@ -37,6 +37,16 @@ const userSchema = new mongoose.Schema(
       enum: ['PENDING', 'ACTIVE', 'BLOCKED'],
       default: 'PENDING',
     },
+    performance: {
+      totalOrdersHandled: {
+        type: Number,
+        default: 0,
+      },
+      lateClockIns: {
+        type: Number,
+        default: 0,
+      },
+    },
     otpCode: {
       type: String,
     },
@@ -66,7 +76,7 @@ userSchema.pre('validate', async function (next) {
         {},
         { sort: { employeeId: -1 } }
       );
-      
+
       let nextId = 1001;
       if (lastUser && lastUser.employeeId) {
         const numericPart = parseInt(lastUser.employeeId.replace('EMP-', ''));
