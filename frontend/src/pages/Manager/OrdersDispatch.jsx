@@ -120,7 +120,7 @@ const OrdersDispatch = () => {
                     : '—';
 
                   const itemsSummary = (order.items || [])
-                    .map((i) => `₹{i.name} ×₹{i.quantity}`)
+                    .map((i) => `${i.name} ×${i.quantity}`)
                     .join(', ');
 
                   return (

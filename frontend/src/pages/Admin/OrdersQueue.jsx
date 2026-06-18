@@ -95,7 +95,7 @@ const OrdersQueue = () => {
                     </td>
                     <td className="py-4 font-bold text-slate-800 dark:text-slate-200">{order.customerName}</td>
                     <td className="py-4 text-slate-500 max-w-xs truncate">
-                      {order.items.map((i) => `₹{i.name} (x₹{i.quantity})`).join(', ')}
+                      {order.items.map((i) => `${i.name} (x${i.quantity})`).join(', ')}
                     </td>
                     <td className="py-4 font-semibold text-slate-700 dark:text-slate-300">
                       {order.assignedEmployee?.name ? (
