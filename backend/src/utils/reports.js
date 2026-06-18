@@ -7,41 +7,51 @@ const generatePDFReport = (data) => {
     try {
       const doc = new PDFDocument({ margin: 50, size: 'A4' });
       const buffers = [];
-      
+
       doc.on('data', (chunk) => buffers.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(buffers)));
       doc.on('error', (err) => reject(err));
 
       // Header block
-      doc.rect(0, 0, 595.28, 110).fill('#1e1b4b'); // Deep indigo background
+      doc.rect(0, 0, 595.28, 130).fill('#1e1b4b'); // Deep indigo background
       doc.fillColor('#ffffff')
-         .font('Helvetica-Bold')
-         .fontSize(22)
-         .text('EPITOME RESTAURANT PLATFORM', 50, 35);
-      
+        .font('Helvetica-Bold')
+        .fontSize(22)
+        .text('GURAMRIT RESTAURANT PLATFORM', 50, 35);
+
       doc.fontSize(10)
-         .font('Helvetica')
-         .text('System Operations & Analytical Report', 50, 65);
-         
+        .font('Helvetica')
+        .text('Restaurant Management System Report', 50, 65);
+
       doc.font('Helvetica-Oblique')
-         .fontSize(9)
-         .text(`Generated: ${new Date().toLocaleString()}`, 400, 38, { align: 'right', width: 145 });
+        .fontSize(9)
+        .text(
+          `Generated: ${new Date().toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata'
+          })}`,
+          380,
+          20,
+          {
+            align: 'right',
+            width: 180
+          }
+        );
 
       // Title Section
-      doc.y = 140;
+      doc.y = 160;
       doc.fillColor('#1e293b')
-         .font('Helvetica-Bold')
-         .fontSize(16)
-         .text('OPERATIONAL METRICS', 50, doc.y);
+        .font('Helvetica-Bold')
+        .fontSize(16)
+        .text('OPERATIONAL METRICS', 50, doc.y);
       doc.moveDown(0.5);
 
       // Draw grid boxes for cards
       const startY = doc.y;
-      
+
       // Card 1: Revenue
       doc.rect(50, startY, 150, 60).fill('#e0e7ff');
       doc.fillColor('#1e1b4b').font('Helvetica-Bold').fontSize(10).text('TOTAL REVENUE', 60, startY + 10);
-      doc.fontSize(14).text(`$${data.summary.totalRevenue.toFixed(2)}`, 60, startY + 30);
+      doc.fontSize(14).text(`₹${data.summary.totalRevenue.toFixed(2)}`, 60, startY + 30);
 
       // Card 2: Orders
       doc.rect(220, startY, 150, 60).fill('#dcfce7');
@@ -57,9 +67,9 @@ const generatePDFReport = (data) => {
 
       // Table 1: Top Selling Items
       doc.fillColor('#1e293b')
-         .font('Helvetica-Bold')
-         .fontSize(14)
-         .text('TOP SELLING ITEMS', 50, doc.y);
+        .font('Helvetica-Bold')
+        .fontSize(14)
+        .text('TOP SELLING ITEMS', 50, doc.y);
       doc.moveDown(0.5);
 
       let tableY = doc.y;
@@ -81,7 +91,7 @@ const generatePDFReport = (data) => {
         }
         doc.text(item.name, 60, tableY + 5);
         doc.text(item.quantity.toString(), 250, tableY + 5);
-        doc.text(`$${item.revenue.toFixed(2)}`, 400, tableY + 5);
+        doc.text(`₹${item.revenue.toFixed(2)}`, 400, tableY + 5);
         tableY += 18;
       });
 
@@ -89,9 +99,9 @@ const generatePDFReport = (data) => {
 
       // Table 2: Recent Orders status
       doc.fillColor('#1e293b')
-         .font('Helvetica-Bold')
-         .fontSize(14)
-         .text('RECENT ORDERS SUMMARY', 50, doc.y);
+        .font('Helvetica-Bold')
+        .fontSize(14)
+        .text('RECENT ORDERS SUMMARY', 50, doc.y);
       doc.moveDown(0.5);
 
       tableY = doc.y;
@@ -112,7 +122,7 @@ const generatePDFReport = (data) => {
         }
         doc.text(order.orderNumber, 60, tableY + 5);
         doc.text(order.customerName, 140, tableY + 5, { width: 130, height: 12, ellipsis: true });
-        doc.text(`$${order.totalAmount.toFixed(2)}`, 280, tableY + 5);
+        doc.text(`₹${order.totalAmount.toFixed(2)}`, 280, tableY + 5);
         doc.text(order.status, 360, tableY + 5);
         doc.text(order.handler || 'Unassigned', 440, tableY + 5, { width: 95, height: 12, ellipsis: true });
         tableY += 18;
@@ -123,9 +133,9 @@ const generatePDFReport = (data) => {
       for (let i = 0; i < pages.count; i++) {
         doc.switchToPage(i);
         doc.fillColor('#94a3b8')
-           .font('Helvetica')
-           .fontSize(8)
-           .text('Epitome Platform • Confidential Report', 50, 780, { align: 'left' });
+          .font('Helvetica')
+          .fontSize(8)
+          .text('Guramrit Platform • Confidential Report', 50, 780, { align: 'left' });
         doc.text(`Page ${i + 1} of ${pages.count}`, 400, 780, { align: 'right', width: 145 });
       }
 
@@ -144,7 +154,7 @@ const generateExcelReport = (data) => {
   const ordersData = data.orders.map((ord) => ({
     'Order Number': ord.orderNumber,
     'Customer Name': ord.customerName,
-    'Total Amount ($)': ord.totalAmount,
+    'Total Amount (₹)': ord.totalAmount,
     'Order Status': ord.status,
     'Assigned Employee': ord.assignedEmployee?.name || 'Unassigned',
     'Employee ID': ord.assignedEmployee?.employeeId || 'N/A',
@@ -172,7 +182,7 @@ const generateExcelReport = (data) => {
   const topItemsData = data.topItems.map((item) => ({
     'Item Name': item.name,
     'Quantity Sold': item.quantity,
-    'Total Revenue ($)': item.revenue,
+    'Total Revenue (₹)': item.revenue,
   }));
   const topItemsWS = XLSX.utils.json_to_sheet(topItemsData);
   XLSX.utils.book_append_sheet(wb, topItemsWS, 'Top Items');
