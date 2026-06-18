@@ -51,7 +51,7 @@ const generatePDFReport = (data) => {
       // Card 1: Revenue
       doc.rect(50, startY, 150, 60).fill('#e0e7ff');
       doc.fillColor('#1e1b4b').font('Helvetica-Bold').fontSize(10).text('TOTAL REVENUE', 60, startY + 10);
-      doc.fontSize(14).text(`₹${data.summary.totalRevenue.toFixed(2)}`, 60, startY + 30);
+      doc.fontSize(14).text(`Rs. ${data.summary.totalRevenue.toFixed(2)}`, 60, startY + 30);
 
       // Card 2: Orders
       doc.rect(220, startY, 150, 60).fill('#dcfce7');
@@ -91,7 +91,7 @@ const generatePDFReport = (data) => {
         }
         doc.text(item.name, 60, tableY + 5);
         doc.text(item.quantity.toString(), 250, tableY + 5);
-        doc.text(`₹${item.revenue.toFixed(2)}`, 400, tableY + 5);
+        doc.text(`Rs. ${item.revenue.toFixed(2)}`, 400, tableY + 5);
         tableY += 18;
       });
 
@@ -122,7 +122,7 @@ const generatePDFReport = (data) => {
         }
         doc.text(order.orderNumber, 60, tableY + 5);
         doc.text(order.customerName, 140, tableY + 5, { width: 130, height: 12, ellipsis: true });
-        doc.text(`₹${order.totalAmount.toFixed(2)}`, 280, tableY + 5);
+        doc.text(`Rs. ${order.totalAmount.toFixed(2)}`, 280, tableY + 5);
         doc.text(order.status, 360, tableY + 5);
         doc.text(order.handler || 'Unassigned', 440, tableY + 5, { width: 95, height: 12, ellipsis: true });
         tableY += 18;
