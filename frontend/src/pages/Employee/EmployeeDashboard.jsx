@@ -1,37 +1,26 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { apiRequest, FILE_BASE_URL } from '../../utils/api';
-import { useSocket } from '../../context/SocketContext';
+import React, { useEffect, useState } from 'react';
+import { apiRequest } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
+import { Link } from 'react-router-dom';
 import {
-  Camera,
-  MapPin,
   Clock,
-  CheckCircle2,
-  AlertCircle,
-  Play,
-  Check,
-  X,
-  RefreshCw
+  ClipboardList,
+  CheckCircle,
+  UserCheck,
+  TrendingUp,
+  ArrowRight,
+  ShieldCheck,
+  Calendar,
+  Camera
 } from 'lucide-react';
 
 const EmployeeDashboard = () => {
   const { user } = useAuth();
-  const { addToast } = useSocket();
-  const [activeSession, setActiveSession] = useState(null);
+  const { socket, addToast } = useSocket();
   const [history, setHistory] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Geolocation & Webcam States
-  const [cameraActive, setCameraActive] = useState(false);
-  const [capturedPhoto, setCapturedPhoto] = useState(null); // base64 string
-  const [gpsCoords, setGpsCoords] = useState(null); // {lat, lng}
-
-  const [clockInLoading, setClockInLoading] = useState(false);
-
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const streamRef = useRef(null);
 
   const fetchData = async () => {
     try {
@@ -45,16 +34,14 @@ const EmployeeDashboard = () => {
       const oData = await ordersRes.json();
 
       if (hData.success) {
-        setHistory(hData.logs);
-        // Find if there is an active clock-in session
-        const active = hData.logs.find(log => !log.clockOutTime && log.status !== 'REJECTED');
-        setActiveSession(active || null);
+        setHistory(hData.logs || []);
       }
       if (oData.success) {
-        setOrders(oData.orders);
+        setOrders(oData.orders || []);
       }
     } catch (e) {
-      console.error('Error fetching employee dashboard data:', e);
+      console.error('Error fetching employee dashboard stats:', e);
+      addToast('Error loading performance data.', 'error');
     } finally {
       setLoading(false);
     }
@@ -64,472 +51,245 @@ const EmployeeDashboard = () => {
     fetchData();
   }, []);
 
-  // Web Cam Controls
-  const startCamera = async () => {
-    console.log("Start Camera Clicked");
+  // Update stats automatically via Socket updates
+  useEffect(() => {
+    if (!socket) return;
 
-    setCapturedPhoto(null);
+    const handleUpdate = () => {
+      fetchData();
+    };
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-      });
+    socket.on('orderUpdate', handleUpdate);
+    socket.on('newOrderAlert', handleUpdate);
 
-      console.log("Stream received:", stream);
+    return () => {
+      socket.off('orderUpdate', handleUpdate);
+      socket.off('newOrderAlert', handleUpdate);
+    };
+  }, [socket]);
 
-      streamRef.current = stream;
-      setCameraActive(true);
+  // Compute Statistics automatically
+  const todayString = new Date().toDateString();
 
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+  const todayLog = history.find(
+    (log) => new Date(log.clockInTime).toDateString() === todayString
+  );
 
-          videoRef.current
-            .play()
-            .then(() => console.log("Video Playing"))
-            .catch((err) => console.error("Play Error:", err));
-        } else {
-          console.error("videoRef.current is NULL");
-        }
-      }, 300);
+  const todayAttendanceStatus = todayLog ? todayLog.status : 'NOT CHECKED IN';
 
-    } catch (err) {
-      console.error("Camera Error:", err);
+  const lastCheckInTime = history.length > 0
+    ? new Date(history[0].clockInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : 'N/A';
 
-      alert(
-        `Camera Error:\n${err.name}\n${err.message}`
-      );
-    }
-  };
+  const ordersAcceptedToday = orders.filter((o) =>
+    o.assignedEmployee?.id === user?.id &&
+    o.assignedEmployee?.assignedAt &&
+    new Date(o.assignedEmployee.assignedAt).toDateString() === todayString
+  ).length;
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    setCameraActive(false);
-  };
+  const ordersCompletedToday = orders.filter((o) =>
+    o.assignedEmployee?.id === user?.id &&
+    ['DELIVERED', 'COMPLETED'].includes(o.status) &&
+    o.history?.some((h) =>
+      ['DELIVERED', 'COMPLETED'].includes(h.status) &&
+      h.timestamp &&
+      new Date(h.timestamp).toDateString() === todayString
+    )
+  ).length;
 
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const context = canvasRef.current.getContext('2d');
-      context.drawImage(videoRef.current, 0, 0, 320, 240);
-      const dataUrl = canvasRef.current.toDataURL('image/jpeg');
-      setCapturedPhoto(dataUrl);
-      stopCamera();
-    }
-  };
+  const totalOrdersCompleted = orders.filter((o) =>
+    o.assignedEmployee?.id === user?.id &&
+    ['DELIVERED', 'COMPLETED'].includes(o.status)
+  ).length;
 
-  // Get GPS Coordinates
-  const fetchGPS = () => {
-
-    if (!navigator.geolocation) {
-      addToast('Geolocation is not supported by your browser.', 'error');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setGpsCoords({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        });
-        addToast('GPS coordinates fetched successfully.', 'success');
-      },
-      (error) => {
-        console.error('Geolocation Error:', error);
-
-        addToast(
-          'Location permission denied. Please allow GPS access.',
-          'error'
-        );
-
-        setGpsCoords(null);
-      },
-      { enableHighAccuracy: true }
+  if (loading && history.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
     );
-  };
-
-  // Handle Clock In
-  const handleClockInSubmit = async () => {
-    if (!capturedPhoto) {
-      addToast('Please capture your photo/selfie first.', 'error');
-      return;
-    }
-    if (!gpsCoords) {
-      addToast('Please capture your GPS coordinates.', 'error');
-      return;
-    }
-
-    setClockInLoading(true);
-    try {
-      // Convert base64 capturedPhoto to Blob file
-      const resBlob = await fetch(capturedPhoto);
-      const blob = await resBlob.blob();
-      const file = new File([blob], 'attendance-selfie.jpg', { type: 'image/jpeg' });
-
-      const formData = new FormData();
-      formData.append('photo', file);
-      formData.append('latitude', gpsCoords.latitude);
-      formData.append('longitude', gpsCoords.longitude);
-
-      const response = await apiRequest('/attendance/clock-in', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        addToast(data.message, 'success');
-        setCapturedPhoto(null);
-        setGpsCoords(null);
-        fetchData();
-      } else {
-        addToast(data.message || 'Clock-in failed.', 'error');
-        fetchData();
-      }
-    } catch (err) {
-      addToast('Connection error during Clock-in.', 'error');
-    } finally {
-      setClockInLoading(false);
-    }
-  };
-
-  // Handle Clock Out
-  const handleClockOut = async () => {
-    try {
-      const response = await apiRequest('/attendance/clock-out', { method: 'POST' });
-      const data = await response.json();
-      if (data.success) {
-        addToast('Clocked out successfully.', 'success');
-        fetchData();
-      } else {
-        addToast(data.message || 'Clock-out failed.', 'error');
-      }
-    } catch (err) {
-      addToast('Connection error during Clock-out.', 'error');
-    }
-  };
-
-  // Order Handlers
-  const handleAcceptOrder = async (orderId) => {
-    try {
-      const res = await apiRequest(`/orders/${orderId}/assign`, { method: 'PATCH' });
-      const data = await res.json();
-      if (data.success) {
-        addToast('Order accepted! Check order details below.', 'success');
-        fetchData();
-      }
-    } catch (err) {
-      addToast('Error accepting order.', 'error');
-    }
-  };
-
-  const handleUpdateStatus = async (orderId, status) => {
-    try {
-      const res = await apiRequest(`/orders/${orderId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        addToast(`Order advanced to ${status}.`, 'success');
-        fetchData();
-      }
-    } catch (err) {
-      addToast('Error updating status.', 'error');
-    }
-  };
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Heading */}
-      <div>
-        <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">
-          Guramrit Employee Dashboard
-        </h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Perform clock-in, handle orders, and monitor your shifts
-        </p>
+    <div className="space-y-8">
+      {/* Welcome Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">
+            Welcome Back, {user?.name}!
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Role: Employee | Employee ID: {user?.employeeId}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100/30 dark:border-indigo-900/35 rounded-2xl text-xs font-bold text-indigo-600 dark:text-indigo-400">
+          <Calendar className="w-4 h-4" />
+          <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Proximity Attendance Widget */}
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Today's Attendance */}
         <div className="p-6 rounded-3xl glass-panel relative overflow-hidden flex flex-col justify-between">
           <div>
-            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-indigo-500" />
-              <span>Shift Attendance</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider">
+              Today's Presence
+            </span>
+            <h3 className={`text-lg font-black mt-2 ${todayAttendanceStatus === 'PRESENT' ? 'text-emerald-600 dark:text-emerald-400' :
+              todayAttendanceStatus === 'LATE' ? 'text-amber-600 dark:text-amber-400' :
+                'text-rose-600 dark:text-rose-450'
+              }`}>
+              {todayAttendanceStatus}
             </h3>
-
-            {activeSession ? (
-              // Clocked In view
-              <div className="space-y-4 py-4">
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-3 text-xs">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-bold text-emerald-900 dark:text-emerald-300">Clocked In Shift Active</h4>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">
-                      Started: {new Date(activeSession.clockInTime).toLocaleTimeString()}
-                    </p>
-                    <p className="text-slate-400 text-[10px] mt-0.5">
-                      Check-in Geofence distance: {activeSession.distanceMeters}m
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleClockOut}
-                  className="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm transition duration-200 shadow-lg shadow-rose-600/15"
-                >
-                  Clock Out Shift
-                </button>
-              </div>
-            ) : (
-              // Clocked Out, need to Clock In
-              <div className="space-y-4">
-                <p className="text-xs font-bold text-red-500">
-                  Camera Active: {String(cameraActive)}
-                </p>
-                {/* Selfie Webcam Feed container */}
-                <div className="w-full aspect-video rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 flex items-center justify-center overflow-hidden relative">
-                  {cameraActive ? (
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover rounded-2xl"
-                    />
-                  ) : capturedPhoto ? (
-                    <img
-                      src={capturedPhoto}
-                      alt="Captured"
-                      className="w-full h-full object-cover rounded-2xl"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <Camera className="w-10 h-10 text-slate-400 mb-2" />
-                      <p>Webcam Selfie Capture</p>
-                    </div>
-                  )}
-
-                  {/* Overlay Canvas */}
-                  <canvas ref={canvasRef} width={320} height={240} className="hidden" />
-                </div>
-
-                {/* Cam Controls */}
-                <div className="flex gap-2">
-                  {!cameraActive ? (
-                    <button
-                      onClick={startCamera}
-                      className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center justify-center gap-1"
-                    >
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>{capturedPhoto ? 'Retake Photo' : 'Start Camera'}</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={capturePhoto}
-                      className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-1"
-                    >
-                      <Play className="w-3.5 h-3.5" />
-                      <span>Capture Selfie</span>
-                    </button>
-                  )}
-                  {cameraActive && (
-                    <button
-                      onClick={stopCamera}
-                      className="p-2 rounded-xl border border-rose-500/20 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-
-                {/* GPS trigger */}
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-indigo-500" />
-                    <div>
-                      <p className="font-bold text-slate-700 dark:text-slate-300">GPS Coordinates</p>
-                      {gpsCoords ? (
-                        <p className="text-[9px] text-slate-400 truncate mt-0.5">
-                          {gpsCoords.latitude.toFixed(5)}, {gpsCoords.longitude.toFixed(5)}
-                        </p>
-                      ) : (
-                        <p className="text-[9px] text-slate-400 mt-0.5">Not fetched yet</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={fetchGPS}
-                    className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-[10px] font-bold"
-                  >
-                    Fetch GPS
-                  </button>
-                </div>
-
-
-                {/* Submit button */}
-                <button
-                  onClick={handleClockInSubmit}
-                  disabled={clockInLoading || !capturedPhoto || !gpsCoords}
-                  className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-sm transition duration-200 shadow-lg shadow-indigo-600/15 flex items-center justify-center gap-1.5"
-                >
-                  {clockInLoading ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <span>Clock In Shift</span>
-                  )}
-                </button>
-              </div>
-            )}
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mt-6">
+            <ShieldCheck className="w-5 h-5" />
           </div>
         </div>
 
-        {/* Assigned and Available Orders Queue */}
-        <div className="lg:col-span-2 p-6 rounded-3xl glass-panel">
-          <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">
-            Orders Desk
-          </h3>
+        {/* Today's Orders Accepted */}
+        <div className="p-6 rounded-3xl glass-panel relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider">
+              Today's Accepted
+            </span>
+            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">
+              {ordersAcceptedToday}
+            </h3>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mt-6">
+            <ClipboardList className="w-5 h-5" />
+          </div>
+        </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-[500px] overflow-y-auto pr-1">
-            {orders.length === 0 ? (
-              <div className="py-12 text-center text-xs text-slate-400">No active orders found.</div>
-            ) : (
-              // Filter orders: employee can see unassigned orders (to accept) or orders assigned to them
-              orders
-                .filter(order => !order.assignedEmployee?.name || order.assignedEmployee.id === user?.id)
-                .map((order) => {
-                  const isMyOrder = order.assignedEmployee?.id === user?.id;
-                  return (
-                    <div key={order._id} className="py-4 first:pt-0 last:pb-0 flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100">{order.orderNumber}</span>
-                          <span className="text-[10px] font-semibold text-slate-400 ml-2">
-                            ({order.customerName})
-                          </span>
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${order.status === 'PENDING' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
-                          order.status === 'PREPARING' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' :
-                            order.status === 'READY' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                              'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
-                          }`}>
-                          {order.status}
-                        </span>
-                      </div>
+        {/* Today's Orders Completed */}
+        <div className="p-6 rounded-3xl glass-panel relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider">
+              Today's Completed
+            </span>
+            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">
+              {ordersCompletedToday}
+            </h3>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mt-6">
+            <CheckCircle className="w-5 h-5" />
+          </div>
+        </div>
 
-                      {/* Items */}
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {order.items.map((i, idx) => (
-                          <span key={idx} className="mr-3 font-semibold">
-                            {i.name} x{i.quantity}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Assign button / advance status */}
-                      <div className="flex justify-between items-center text-xs mt-1">
-                        <div>
-                          {isMyOrder ? (
-                            <p className="text-[10px] text-indigo-500 font-bold">Assigned to You</p>
-                          ) : (
-                            <p className="text-[10px] text-amber-500 font-bold">Unassigned Order</p>
-                          )}
-                        </div>
-
-                        <div>
-                          {!isMyOrder ? (
-                            <button
-                              onClick={() => handleAcceptOrder(order._id)}
-                              className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
-                            >
-                              Accept Order
-                            </button>
-                          ) : (
-                            <div className="flex gap-1">
-                              {order.status === 'PREPARING' && (
-                                <button
-                                  onClick={() => handleUpdateStatus(order._id, 'READY')}
-                                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white font-bold flex items-center gap-1"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                  <span>Mark Ready</span>
-                                </button>
-                              )}
-                              {order.status === 'READY' && (
-                                <button
-                                  onClick={() => handleUpdateStatus(order._id, 'DELIVERED')}
-                                  className="px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white font-bold flex items-center gap-1"
-                                >
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  <span>Deliver Order</span>
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-            )}
+        {/* Last Check-In Time */}
+        <div className="p-6 rounded-3xl glass-panel relative overflow-hidden flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider">
+              Last Check-In
+            </span>
+            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 mt-2">
+              {lastCheckInTime}
+            </h3>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mt-6">
+            <Clock className="w-5 h-5" />
           </div>
         </div>
       </div>
 
-      {/* Shifts History Log */}
-      <div className="p-6 rounded-3xl glass-panel">
-        <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">
-          Shift Log History
-        </h3>
+      {/* Employee Performance Summary & Quick Navigation */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Performance Statistics */}
+        <div className="p-6 rounded-3xl glass-panel lg:col-span-2 space-y-6">
+          <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-indigo-500" />
+            <span>Employee Performance Summary</span>
+          </h3>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
-                <th className="pb-3">Date</th>
-                <th className="pb-3">Clock In</th>
-                <th className="pb-3">Clock Out</th>
-                <th className="pb-3">Work Hours</th>
-                <th className="pb-3">Proximity</th>
-                <th className="pb-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-              {history.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-6 text-center text-slate-400">No shift histories found.</td>
-                </tr>
-              ) : (
-                history.map((log) => (
-                  <tr key={log._id}>
-                    <td className="py-3.5 font-semibold">{new Date(log.clockInTime).toLocaleDateString()}</td>
-                    <td className="py-3.5 text-indigo-500 font-medium">
-                      {new Date(log.clockInTime).toLocaleTimeString()}
-                    </td>
-                    <td className="py-3.5 text-emerald-500 font-medium">
-                      {log.clockOutTime ? new Date(log.clockOutTime).toLocaleTimeString() : 'N/A'}
-                    </td>
-                    <td className="py-3.5 font-bold">{log.workHours ? `${log.workHours} hrs` : 'N/A'}</td>
-                    <td className="py-3.5 text-slate-450">{log.distanceMeters} meters</td>
-                    <td className="py-3.5">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${log.status === 'PRESENT' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                        log.status === 'LATE' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
-                          'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-350'
-                        }`}>
-                        {log.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 rounded-2xl flex justify-between items-center">
+              <span>Orders Accepted Today:</span>
+              <span className="font-extrabold text-indigo-650 dark:text-indigo-400 text-sm">{ordersAcceptedToday}</span>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 rounded-2xl flex justify-between items-center">
+              <span>Orders Completed Today:</span>
+              <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">{ordersCompletedToday}</span>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 rounded-2xl flex justify-between items-center">
+              <span>Total Orders Completed:</span>
+              <span className="font-extrabold text-slate-800 dark:text-slate-205 text-sm">{totalOrdersCompleted}</span>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 rounded-2xl flex justify-between items-center">
+              <span>Attendance Status Today:</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${todayAttendanceStatus === 'PRESENT' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                todayAttendanceStatus === 'LATE' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                  'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-350'
+                }`}>
+                {todayAttendanceStatus}
+              </span>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 rounded-2xl flex justify-between items-center md:col-span-2">
+              <span>Last Clock-In Registered:</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{lastCheckInTime}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Navigation Cards */}
+        <div className="space-y-4">
+          <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            Quick Navigation
+          </h3>
+
+          <div className="grid grid-cols-1 gap-4">
+            {/* Orders Desk */}
+            <Link
+              to="/employee/orders"
+              className="p-5 rounded-3xl glass-panel border border-slate-100 dark:border-slate-850 flex items-center justify-between group hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition duration-200"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                  <ClipboardList className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200">Order Desk</h4>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Accept and prepare active orders</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-450 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            {/* Check In / Out */}
+            <Link
+              to="/employee/attendance"
+              className="p-5 rounded-3xl glass-panel border border-slate-100 dark:border-slate-850 flex items-center justify-between group hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition duration-200"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <Camera className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200">Check In/Out</h4>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Selfie & GPS location check-in</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-450 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            {/* Log History */}
+            <Link
+              to="/employee/log-history"
+              className="p-5 rounded-3xl glass-panel border border-slate-100 dark:border-slate-850 flex items-center justify-between group hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition duration-200"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200">Log History</h4>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Review shift logs and history</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-450 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -11,7 +11,8 @@ import {
   X,
   ShoppingCart,
   History,
-  ShieldCheck
+  ShieldCheck,
+  Camera
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -38,7 +39,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         return [
           { name: 'Work Dashboard', path: '/employee', icon: Home },
           { name: 'Order Desk', path: '/employee/orders', icon: ClipboardList },
-          { name: 'My Attendance Logs', path: '/employee/attendance', icon: Clock },
+          { name: 'Check In/Out', path: '/employee/attendance', icon: Camera },
+          { name: 'Log History', path: '/employee/log-history', icon: Clock },
         ];
       case 'CUSTOMER':
         return [

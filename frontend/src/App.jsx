@@ -26,6 +26,9 @@ import AttendanceTracker from './pages/Manager/AttendanceTracker';
 
 // Employee Pages
 import EmployeeDashboard from './pages/Employee/EmployeeDashboard';
+import EmployeeOrders from './pages/Employee/EmployeeOrders';
+import EmployeeAttendance from './pages/Employee/EmployeeAttendance';
+import LogHistory from './pages/Employee/LogHistory';
 
 // Customer Pages
 import CustomerMenu from './pages/Customer/CustomerMenu';
@@ -66,8 +69,9 @@ function App() {
               {/* Employee Routes */}
               <Route element={<Layout allowedRoles={['EMPLOYEE']} />}>
                 <Route path="/employee" element={<EmployeeDashboard />} />
-                <Route path="/employee/orders" element={<EmployeeDashboard />} />
-                <Route path="/employee/attendance" element={<EmployeeDashboard />} />
+                <Route path="/employee/orders" element={<EmployeeOrders />} />
+                <Route path="/employee/attendance" element={<EmployeeAttendance />} />
+                <Route path="/employee/log-history" element={<LogHistory />} />
               </Route>
 
               {/* Customer Routes */}
